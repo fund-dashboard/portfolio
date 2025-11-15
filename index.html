@@ -11,7 +11,7 @@ body {
     margin: 30px auto;
     background: #f0f2f5;
     color: #222;
-    line-height: 1.25;
+    line-height: 1.25;  /* menší řádkování */
 }
 
 h1 {
@@ -24,7 +24,7 @@ h1 {
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 16px;   /* menší mezery */
 }
 
 .card {
@@ -56,19 +56,15 @@ h1 {
     margin-top: 4px;
 }
 
-/* === OPRAVENÝ GRAF === */
 #chart-container {
-    position: relative;
     width: 100%;
-    max-width: 100%;
-    height: 220px;
-    overflow: hidden;
-    padding-top: 10px;
+    height: 220px;   /* pevná výška – opravuje extrémní natažení */
 }
-canvas#chart {
-    display: block;
-    max-height: 100% !important;
+#chart {
+    width: 100% !important;
+    height: 100% !important;
 }
+
 </style>
 </head>
 <body>
@@ -76,8 +72,6 @@ canvas#chart {
 <h1>Jindrovo akciové portfolio</h1>
 
 <div class="grid-2">
-
-    <!-- LEVÁ KARTA -->
     <div class="card">
         <div class="section-title">Aktuální stav</div>
 
@@ -97,10 +91,9 @@ canvas#chart {
         <p><span class="label">Kurz EUR/CZK:</span> 
            <span class="value">24.18</span></p>
 
-        <p class="small-info">Aktualizováno: 2025-11-15 10:12</p>
+        <p class="small-info">Aktualizováno: 2025-11-15 10:36</p>
     </div>
 
-    <!-- PRAVÁ KARTA -->
     <div class="card">
         <div class="section-title">Výkonnost od nákupu</div>
 
@@ -108,16 +101,19 @@ canvas#chart {
            141.90 EUR (2025-11-14)</p>
 
         <p><span class="label">Zhodnocení:</span> 
-           <span class="value" style="color: #0a6;">1.25 %</span></p>
+           <span class="value" style="color: #0a6;">
+               1.25 %
+           </span></p>
 
         <p><span class="label">Celkem vyděláno:</span> 
-           <span class="value" style="color: #0a6;">0.53 EUR</span></p>
+           <span class="value" style="color: #0a6;">
+               0.53 EUR
+           </span></p>
     </div>
 </div>
 
 <br>
 
-<!-- GRAF -->
 <div class="card">
     <div class="section-title">Graf vývoje VWCE</div>
     <div id="chart-container">
@@ -125,11 +121,9 @@ canvas#chart {
     </div>
 </div>
 
-<!-- CHART.JS MUSÍ BÝT NAČTENO -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// Načtená data — generuje Python skript
 const labels = ["2025-11-14"];
 const data = [143.68];
 
@@ -145,32 +139,25 @@ new Chart(ctx, {
             borderWidth: 2,
             borderColor: '#0a6',
             backgroundColor: 'rgba(0, 160, 90, 0.12)',
-            pointRadius: 6,
-            pointHoverRadius: 9,
+            pointRadius: 6,          // 🔵 viditelný bod i při 1 hodnotě
+            pointHoverRadius: 9,     // 🔵 větší bod při hoveru
             pointBackgroundColor: '#0a6',
+            pointHoverBackgroundColor: '#084',
             tension: 0.18
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
-
         plugins: {
             legend: { display: false },
             tooltip: {
                 enabled: true,
-                backgroundColor: "rgba(0,0,0,0.75)",
-                titleColor: "#fff",
-                bodyColor: "#fff",
-                displayColors: false,
                 callbacks: {
-                    label: function(ctx) {
-                        return ctx.parsed.y + " EUR";
-                    }
+                    label: (ctx) => ctx.parsed.y + " EUR"
                 }
             }
         },
-
         scales: {
             y: { beginAtZero: false },
             x: { display: false }
