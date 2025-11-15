@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Jindrovo portfolio</title>
+
+<style>
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 900px;
+    margin: 30px auto;
+    background: #f0f2f5;
+    color: #222;
+    line-height: 1.25;  /* menší řádkování */
+}
+
+h1 {
+    font-weight: 600;
+    font-size: 26px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;   /* menší mezery */
+}
+
+.card {
+    background: white;
+    padding: 18px 20px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #084c9e;
+}
+
+.value {
+    font-weight: 600;
+    color: #0a6;
+}
+
+.label {
+    color: #444;
+}
+
+.small-info {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+#chart-container {
+    width: 100%;
+    height: 220px;   /* pevná výška – opravuje extrémní natažení */
+}
+#chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+</style>
+</head>
+<body>
+
+<h1>Jindrovo akciové portfolio</h1>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="section-title">Aktuální stav</div>
+
+        <p><span class="label">ETF:</span> 
+           <strong>Vanguard FTSE All-World UCITS ETF (VWCE)</strong></p>
+
+        <p><span class="label">Množství:</span> 
+           <span class="value">{{SHARES}} ks</span></p>
+
+        <p><span class="label">Cena VWCE:</span> 
+           <span class="value">{{PRICE}} EUR</span></p>
+
+        <p><span class="label">Hodnota portfolia:</span> 
+           <span class="value">{{VALUE_EUR}} EUR</span>
+           (<span class="value">{{VALUE_CZK}} Kč</span>)</p>
+
+        <p><span class="label">Kurz EUR/CZK:</span> 
+           <span class="value">{{RATE}}</span></p>
+
+        <p class="small-info">Aktualizováno: {{UPDATED}}</p>
+    </div>
+
+    <div class="card">
+        <div class="section-title">Výkonnost od nákupu</div>
+
+        <p><span class="label">Nákupní cena:</span> 
+           {{PURCHASE_PRICE}} EUR ({{PURCHASE_DATE}})</p>
+
+        <p><span class="label">Zhodnocení:</span> 
+           <span class="value" style="color: {{GROWTH_COLOR}};">
+               {{GROWTH_PERCENT}} %
+           </span></p>
+
+        <p><span class="label">Celkem vyděláno:</span> 
+           <span class="value" style="color: {{GROWTH_COLOR}};">
+               {{GROWTH_EUR}} EUR
+           </span></p>
+    </div>
+</div>
+
+<br>
+
+<div class="card">
+    <div class="section-title">Graf vývoje VWCE</div>
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const labels = {{HISTORY_DATES}};
+const data = {{HISTORY_CLOSE}};
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'VWCE (EUR)',
+            data: data,
+            borderWidth: 2,
+            borderColor: '#0a6',
+            backgroundColor: 'rgba(0, 160, 90, 0.12)',
+            pointRadius: 0,
+            tension: 0.18
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,   // důležité pro pevnou výšku
+        scales: {
+            y: { beginAtZero: false },
+            x: { display: false }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

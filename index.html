@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Jindrovo portfolio</title>
+
+<style>
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 900px;
+    margin: 40px auto;
+    background: #f0f2f5;
+    color: #222;
+}
+
+h1 {
+    font-weight: 600;
+    font-size: 28px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #084c9e;
+}
+
+.value {
+    font-weight: 600;
+    color: #0a6;
+}
+
+.value-red {
+    font-weight: 600;
+    color: #c00;
+}
+
+.label {
+    color: #555;
+}
+
+.small-info {
+    font-size: 13px;
+    color: #777;
+    margin-top: 6px;
+}
+</style>
+</head>
+<body>
+
+<h1>Jindrovo akciové portfolio</h1>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="section-title">Aktuální stav</div>
+
+        <p><span class="label">ETF:</span> 
+           <strong>Vanguard FTSE All-World UCITS ETF (VWCE)</strong></p>
+
+        <p><span class="label">Množství:</span> 
+           <span class="value">0.3 ks</span></p>
+
+        <p><span class="label">Cena VWCE:</span> 
+           <span class="value">143.68 EUR</span></p>
+
+        <p><span class="label">Hodnota portfolia:</span> 
+           <span class="value">43.10 EUR</span>
+           (<span class="value">1042.10 Kč</span>)</p>
+
+        <p><span class="label">Kurz EUR/CZK:</span> 
+           <span class="value">24.18</span></p>
+
+        <p class="small-info">Aktualizováno: 2025-11-15 09:24</p>
+    </div>
+
+    <div class="card">
+        <div class="section-title">Výkonnost od nákupu</div>
+
+        <p><span class="label">Původní cena:</span> 
+           141.90 EUR</p>
+
+        <p><span class="label">Zhodnocení:</span> 
+           <span class="value" style="color: #0a6;">
+               1.25 %
+           </span>
+        </p>
+
+        <p><span class="label">Celkem vyděláno:</span> 
+           <span class="value" style="color: #0a6;">
+               0.53 EUR
+           </span>
+        </p>
+
+        <p class="small-info">Nákup: 2025-11-14</p>
+    </div>
+</div>
+
+<br>
+
+<div class="card">
+    <div class="section-title">Graf vývoje VWCE</div>
+    <canvas id="chart" height="130"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const labels = ["2025-11-14"];
+const data = [143.68];
+
+const ctx = document.getElementById('chart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'VWCE (EUR)',
+            data: data,
+            borderWidth: 2,
+            borderColor: '#0a6',
+            backgroundColor: 'rgba(0, 160, 90, 0.12)',
+            pointRadius: 0,
+            tension: 0.18
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: false },
+            x: { display: false }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+</script>
+
+</body>
+</html>
