@@ -56,13 +56,14 @@ h1 {
     margin-top: 4px;
 }
 
-/* === OPRAVENÝ GRAF — NEROZTAHUJE SE === */
+/* === OPRAVENÝ GRAF === */
 #chart-container {
     position: relative;
     width: 100%;
     max-width: 100%;
-    height: 220px;        /* pevná výška */
-    overflow: hidden;     /* žádné roztahování */
+    height: 220px;
+    overflow: hidden;
+    padding-top: 10px;
 }
 canvas#chart {
     display: block;
@@ -75,6 +76,8 @@ canvas#chart {
 <h1>Jindrovo akciové portfolio</h1>
 
 <div class="grid-2">
+
+    <!-- LEVÁ KARTA -->
     <div class="card">
         <div class="section-title">Aktuální stav</div>
 
@@ -97,6 +100,7 @@ canvas#chart {
         <p class="small-info">Aktualizováno: 2025-11-15 10:12</p>
     </div>
 
+    <!-- PRAVÁ KARTA -->
     <div class="card">
         <div class="section-title">Výkonnost od nákupu</div>
 
@@ -104,19 +108,16 @@ canvas#chart {
            141.90 EUR (2025-11-14)</p>
 
         <p><span class="label">Zhodnocení:</span> 
-           <span class="value" style="color: #0a6;">
-               1.25 %
-           </span></p>
+           <span class="value" style="color: #0a6;">1.25 %</span></p>
 
         <p><span class="label">Celkem vyděláno:</span> 
-           <span class="value" style="color: #0a6;">
-               0.53 EUR
-           </span></p>
+           <span class="value" style="color: #0a6;">0.53 EUR</span></p>
     </div>
 </div>
 
 <br>
 
+<!-- GRAF -->
 <div class="card">
     <div class="section-title">Graf vývoje VWCE</div>
     <div id="chart-container">
@@ -124,7 +125,11 @@ canvas#chart {
     </div>
 </div>
 
+<!-- CHART.JS MUSÍ BÝT NAČTENO -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+// Načtená data — generuje Python skript
 const labels = ["2025-11-14"];
 const data = [143.68];
 
@@ -140,11 +145,9 @@ new Chart(ctx, {
             borderWidth: 2,
             borderColor: '#0a6',
             backgroundColor: 'rgba(0, 160, 90, 0.12)',
-            pointRadius: 6,               // 🔵 bod je viditelný
-            pointHoverRadius: 9,          // 🔵 zvětší se při hoveru
+            pointRadius: 6,
+            pointHoverRadius: 9,
             pointBackgroundColor: '#0a6',
-            pointHoverBackgroundColor: '#084',
-            pointBorderWidth: 0,
             tension: 0.18
         }]
     },
@@ -154,10 +157,9 @@ new Chart(ctx, {
 
         plugins: {
             legend: { display: false },
-
             tooltip: {
                 enabled: true,
-                backgroundColor: "rgba(0,0,0,0.8)",
+                backgroundColor: "rgba(0,0,0,0.75)",
                 titleColor: "#fff",
                 bodyColor: "#fff",
                 displayColors: false,
