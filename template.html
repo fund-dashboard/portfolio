@@ -124,8 +124,6 @@ canvas#chart {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
 const labels = {{HISTORY_DATES}};
 const data = {{HISTORY_CLOSE}};
@@ -142,8 +140,8 @@ new Chart(ctx, {
             borderWidth: 2,
             borderColor: '#0a6',
             backgroundColor: 'rgba(0, 160, 90, 0.12)',
-            pointRadius: 4,          // 🔵 viditelný bod
-            pointHoverRadius: 7,     // 🔵 zvětší se při hoveru
+            pointRadius: 6,               // 🔵 bod je viditelný
+            pointHoverRadius: 9,          // 🔵 zvětší se při hoveru
             pointBackgroundColor: '#0a6',
             pointHoverBackgroundColor: '#084',
             pointBorderWidth: 0,
@@ -158,7 +156,7 @@ new Chart(ctx, {
             legend: { display: false },
 
             tooltip: {
-                enabled: true,     // 🟢 tooltip funguje i s jedním bodem
+                enabled: true,
                 backgroundColor: "rgba(0,0,0,0.8)",
                 titleColor: "#fff",
                 bodyColor: "#fff",
@@ -178,7 +176,6 @@ new Chart(ctx, {
     }
 });
 </script>
-
 
 </body>
 </html>
