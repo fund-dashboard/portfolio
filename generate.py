@@ -2,6 +2,7 @@ import yfinance as yf
 import requests
 from datetime import datetime
 import json
+import pandas as pd
 
 SHARES = 0.3
 PURCHASE_DATE = "2025-11-14"
@@ -21,12 +22,32 @@ def get_fx_rate():
 def get_vwce_history():
     t = yf.Ticker("VWCE.DE")
     df = t.history(period="max")
-    df = df[df.index >= PURCHASE_DATE]
-    history = {
-        "dates": df.index.strftime("%Y-%m-%d").tolist(),
-        "close": df["Close"].round(2).tolist()
-    }
-    return history
+
+    # převedeme PURCHASE_DATE na Timestamp
+    purchase_ts = pd.to_datetime(PURCHASE_DATE)
+
+    # data až od následujícího dne po nákupu
+    df = df[df.index > purchase_ts]
+
+    # zaokrouhlení
+    df["Close"] = df["Close"].round(2)
+
+    # vytvoření seznamů
+    dates = df.index.strftime("%Y-%m-%d").tolist()
+    close = df["Close"].tolist()
+
+    # vložíme jako PRVNÍ bod nákupní cenu
+    dates.insert(0, PURCHASE_DATE)
+    close.insert(0, round(PURCHASE_PRICE, 2))
+
+    # a pokud je historie jen 1 den (nákupní),
+    # přidáme druhý bod stejné hodnoty, aby se graf vykreslil
+    if len(dates) == 1:
+        dates.append(PURCHASE_DATE)
+        close.append(round(PURCHASE_PRICE, 2))
+
+    return {"dates": dates, "close": close}
+
 
 def main():
     price = get_vwce_price()
