@@ -56,4 +56,31 @@ def main():
     value_czk = value_eur * rate
 
     initial_value = SHARES * PURCHASE_PRICE
-    growth
+    growth_ratio = value_eur / initial_value - 1
+    growth_percent = growth_ratio * 100
+
+    with open(TEMPLATE, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    html = html.replace("{{PRICE}}", f"{price:.2f}")
+    html = html.replace("{{VALUE_EUR}}", f"{value_eur:.2f}")
+    html = html.replace("{{VALUE_CZK}}", f"{value_czk:.2f}")
+    html = html.replace("{{RATE}}", f"{rate:.2f}")
+    html = html.replace("{{SHARES}}", f"{SHARES}")
+    html = html.replace("{{PURCHASE_DATE}}", PURCHASE_DATE)
+    html = html.replace("{{PURCHASE_PRICE}}", f"{PURCHASE_PRICE:.2f}")
+    html = html.replace("{{GROWTH_PERCENT}}", f"{growth_percent:.2f}")
+    html = html.replace("{{GROWTH_COLOR}}", "#0a6" if growth_percent >= 0 else "#c00")
+
+    html = html.replace("{{GROWTH_EUR}}", f"{value_eur - initial_value:.2f}")
+    html = html.replace("{{UPDATED}}", datetime.now().strftime("%Y-%m-%d %H:%M"))
+
+    # graph data
+    html = html.replace("{{HISTORY_DATES}}", json.dumps(history["dates"]))
+    html = html.replace("{{HISTORY_CLOSE}}", json.dumps(history["close"]))
+
+    with open(OUTPUT, "w", encoding="utf-8") as f:
+        f.write(html)
+
+if __name__ == "__main__":
+    main()
