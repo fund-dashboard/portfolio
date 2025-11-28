@@ -11,7 +11,7 @@ body {
     margin: 30px auto;
     background: #f0f2f5;
     color: #222;
-    line-height: 1.25;  /* menší řádkování */
+    line-height: 1.25;
 }
 
 h1 {
@@ -24,7 +24,7 @@ h1 {
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;   /* menší mezery */
+    gap: 16px;
 }
 
 .card {
@@ -58,18 +58,33 @@ h1 {
 
 #chart-container {
     width: 100%;
-    height: 220px;   /* pevná výška – opravuje extrémní natažení */
+    height: 220px;
 }
 #chart {
     width: 100% !important;
     height: 100% !important;
 }
 
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+th, td {
+    padding: 6px 4px;
+}
+th {
+    text-align: left;
+    color: #084c9e;
+}
+tr:nth-child(even) {
+    background: #f7f9fc;
+}
 </style>
 </head>
 <body>
 
-<h1>Jindrovo akciové portfolio</h1>
+<h1>Jindrovo portfolio</h1>
 
 <div class="grid-2">
     <div class="card">
@@ -79,10 +94,10 @@ h1 {
            <strong>Vanguard FTSE All-World UCITS ETF (VWCE)</strong></p>
 
         <p><span class="label">Množství:</span> 
-           <span class="value">{{SHARES}} ks</span></p>
+           <span class="value">{{TOTAL_SHARES}} ks</span></p>
 
         <p><span class="label">Cena VWCE:</span> 
-           <span class="value">{{PRICE}} EUR</span></p>
+           <span class="value">{{CURRENT_PRICE}} EUR</span></p>
 
         <p><span class="label">Hodnota portfolia:</span> 
            <span class="value">{{VALUE_EUR}} EUR</span>
@@ -95,17 +110,17 @@ h1 {
     </div>
 
     <div class="card">
-        <div class="section-title">Výkonnost od nákupu</div>
+        <div class="section-title">Výkonnost</div>
 
-        <p><span class="label">Nákupní cena:</span> 
-           {{PURCHASE_PRICE}} EUR ({{PURCHASE_DATE}})</p>
+        <p><span class="label">Průměrná nákupní cena:</span> 
+           {{AVG_PRICE}} EUR</p>
 
         <p><span class="label">Zhodnocení:</span> 
            <span class="value" style="color: {{GROWTH_COLOR}};">
                {{GROWTH_PERCENT}} %
            </span></p>
 
-        <p><span class="label">Celkový zisk:</span> 
+        <p><span class="label">Celkem vyděláno:</span> 
            <span class="value" style="color: {{GROWTH_COLOR}};">
                {{GROWTH_EUR}} EUR
            </span></p>
@@ -114,6 +129,20 @@ h1 {
 
 <br>
 
+<!-- ⭐ Historie nákupů -->
+<div class="card">
+  <div class="section-title">Historie nákupů</div>
+  <table>
+    <tr>
+      <th>Datum</th><th>Množství</th><th>Cena</th>
+    </tr>
+    {{TRADE_ROWS}}
+  </table>
+</div>
+
+<br>
+
+<!-- ⭐ Graf -->
 <div class="card">
     <div class="section-title">Graf vývoje VWCE</div>
     <div id="chart-container">
@@ -124,43 +153,119 @@ h1 {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+// ----- Data -----
 const labels = {{HISTORY_DATES}};
 const data = {{HISTORY_CLOSE}};
 
+const tradeDates = {{TRADE_POINTS_DATES}};
+const tradePrices = {{TRADE_POINTS_PRICES}};
+
+// ----- Graf -----
 const ctx = document.getElementById('chart').getContext('2d');
 
 new Chart(ctx, {
     type: 'line',
     data: {
         labels: labels,
-        datasets: [{
-            label: 'VWCE (EUR)',
-            data: data,
-            borderWidth: 2,
-            borderColor: '#0a6',
-            backgroundColor: 'rgba(0, 160, 90, 0.12)',
-            pointRadius: 2,          // 🔵 viditelný bod i při 1 hodnotě
-            pointHoverRadius: 6,     // 🔵 větší bod při hoveru
-            pointBackgroundColor: '#0a6',
-            pointHoverBackgroundColor: '#084',
-            tension: 0.18
-        }]
+        datasets: [
+            {
+                label: 'VWCE (EUR)',
+                data: data,
+                borderWidth: 2,
+                borderColor: '#0a6',
+                backgroundColor: 'rgba(0, 160, 90, 0.12)',
+                pointRadius: 0,
+                tension: 0.18
+            },
+            {
+                label: 'Průměrná nákupní cena',
+                data: new Array(labels.length).fill({{AVG_PRICE_JS}}),
+                borderWidth: 1.5,
+                borderColor: '#d33',
+                borderDash: [6,4],
+                pointRadius: 0,
+                hoverRadius: 0
+            },
+            {
+                label: 'Nákupy',
+                parsing: false,
+                data: tradeDates.map((date, i) => ({
+                    x: date,
+                    y: tradePrices[i]
+                })),
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: '#d00',
+                borderWidth: 0,
+                showLine: false
+            }
+        ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
+
+    scales: {
+    x: {
+        display: true,
+        title: {
+            display: true,
+            text: 'Datum',
+            color: '#555',
+            font: { size: 13, weight: '600' }
+        },
+        ticks: {
+            color: '#666',
+            autoSkip: true,
+            maxTicksLimit: 8,
+            maxRotation: 45,   // ← rotace 45°
+            minRotation: 45
+        },
+        grid: {
+            color: 'rgba(0,0,0,0.05)'
+        }
+    },
+
+    y: {
+        beginAtZero: false,
+        title: {
+            display: true,
+            text: 'Cena (EUR)',
+            color: '#555',
+            font: { size: 13, weight: '600' }
+        },
+        ticks: {
+            color: '#666'
+        },
+        grid: {
+            color: 'rgba(0,0,0,0.05)'
+        }
+    }
+    },
+
         plugins: {
             legend: { display: false },
+
             tooltip: {
                 enabled: true,
                 callbacks: {
-                    label: (ctx) => ctx.parsed.y + " EUR"
+                    label: function(ctx) {
+
+                        // 🔴 nákupní tečka
+                        if (ctx.dataset.label === "Nákupy") {
+                            return "Nákup: " + ctx.parsed.y + " EUR";
+                        }
+
+                        // 🟠 průměrná nákupní cena
+                        if (ctx.dataset.label === "Průměrná nákupní cena") {
+                            return "Průměrná nákupní cena: {{AVG_PRICE_JS}} EUR";
+                        }
+
+                        // 🟢 běžná cena VWCE
+                        return ctx.parsed.y + " EUR";
+                    }
                 }
             }
-        },
-        scales: {
-            y: { beginAtZero: false },
-            x: { display: false }
         }
     }
 });
