@@ -4,11 +4,15 @@ from datetime import datetime
 import json
 import pandas as pd
 
-SHARES = 0.3
-PURCHASE_DATE = "2025-11-14"
-PURCHASE_PRICE = 141.90  # EUR
 TEMPLATE = "template.html"
 OUTPUT = "index.html"
+
+# 💰 ZDE DEFINUJEŠ NÁKUPY
+TRADES = [
+    {"date": "2025-11-14", "price": 141.90, "shares": 0.3},
+    # Přidej další nákupy sem...
+    # {"date": "2025-11-18", "price": 143.20, "shares": 0.7},
+]
 
 def get_vwce_price():
     t = yf.Ticker("VWCE.DE")
@@ -19,65 +23,82 @@ def get_fx_rate():
     url = "https://open.er-api.com/v6/latest/EUR"
     return requests.get(url).json()["rates"]["CZK"]
 
-def get_vwce_history():
+def get_vwce_history(first_trade_date):
     t = yf.Ticker("VWCE.DE")
     df = t.history(period="max")
 
-    # odstranění časové zóny — klíčová oprava
+    # Odstranit časové zóny kvůli porovnání
     df.index = df.index.tz_localize(None)
 
-    # převedeme PURCHASE_DATE na Timestamp
-    purchase_ts = pd.to_datetime(PURCHASE_DATE)
+    first_ts = pd.to_datetime(first_trade_date)
+    df = df[df.index >= first_ts]
 
-    # filtrace: až následující den po nákupu
-    df = df[df.index > purchase_ts]
-
-    # vytvoříme seznamy
-    dates = df.index.strftime("%Y-%m-%d").tolist()
-    close = df["Close"].round(2).tolist()
-
-    # vložíme nákupní bod na začátek
-    dates.insert(0, PURCHASE_DATE)
-    close.insert(0, round(PURCHASE_PRICE, 2))
-
-    # Pokud je jen jeden den dat, duplikujeme
-    if len(dates) == 1:
-        dates.append(PURCHASE_DATE)
-        close.append(round(PURCHASE_PRICE, 2))
-
-    return {"dates": dates, "close": close}
+    return {
+        "dates": df.index.strftime("%Y-%m-%d").tolist(),
+        "close": df["Close"].round(2).tolist()
+    }
 
 def main():
-    price = get_vwce_price()
-    rate = get_fx_rate()
-    history = get_vwce_history()
+    # ===== Výpočty =====
+    total_shares = sum(t["shares"] for t in TRADES)
+    total_spent  = sum(t["shares"] * t["price"] for t in TRADES)
 
-    value_eur = price * SHARES
+    avg_price = total_spent / total_shares
+
+    current_price = get_vwce_price()
+    rate = get_fx_rate()
+
+    value_eur = current_price * total_shares
     value_czk = value_eur * rate
 
-    initial_value = SHARES * PURCHASE_PRICE
-    growth_ratio = value_eur / initial_value - 1
+    growth_ratio = value_eur / total_spent - 1
     growth_percent = growth_ratio * 100
+    growth_eur = value_eur - total_spent
 
+    # Historie VWCE
+    first_trade = TRADES[0]["date"]
+    history = get_vwce_history(first_trade)
+
+    # ===== HTML =====
     with open(TEMPLATE, "r", encoding="utf-8") as f:
         html = f.read()
 
-    html = html.replace("{{PRICE}}", f"{price:.2f}")
+    # základní hodnoty
+    html = html.replace("{{TOTAL_SHARES}}", f"{total_shares}")
+    html = html.replace("{{CURRENT_PRICE}}", f"{current_price:.2f}")
     html = html.replace("{{VALUE_EUR}}", f"{value_eur:.2f}")
     html = html.replace("{{VALUE_CZK}}", f"{value_czk:.2f}")
     html = html.replace("{{RATE}}", f"{rate:.2f}")
-    html = html.replace("{{SHARES}}", f"{SHARES}")
-    html = html.replace("{{PURCHASE_DATE}}", PURCHASE_DATE)
-    html = html.replace("{{PURCHASE_PRICE}}", f"{PURCHASE_PRICE:.2f}")
+
+    # růst a výkonnost
+    html = html.replace("{{AVG_PRICE}}", f"{avg_price:.2f}")
     html = html.replace("{{GROWTH_PERCENT}}", f"{growth_percent:.2f}")
+    html = html.replace("{{GROWTH_EUR}}", f"{growth_eur:.2f}")
     html = html.replace("{{GROWTH_COLOR}}", "#0a6" if growth_percent >= 0 else "#c00")
 
-    html = html.replace("{{GROWTH_EUR}}", f"{value_eur - initial_value:.2f}")
     html = html.replace("{{UPDATED}}", datetime.now().strftime("%Y-%m-%d %H:%M"))
 
-    # graph data
+    # seznam nákupů
+    trade_rows = ""
+    for t in TRADES:
+        trade_rows += f"<tr><td>{t['date']}</td><td>{t['shares']} ks</td><td>{t['price']} EUR</td></tr>\n"
+
+    html = html.replace("{{TRADE_ROWS}}", trade_rows)
+
+    # graf — historie
     html = html.replace("{{HISTORY_DATES}}", json.dumps(history["dates"]))
     html = html.replace("{{HISTORY_CLOSE}}", json.dumps(history["close"]))
+
+    # graf — tečky nákupů
+    purchase_points = {}
+    for t in TRADES:
+        purchase_points[t["date"]] = t["price"]
+
+    html = html.replace("{{TRADE_POINTS_DATES}}", json.dumps(list(purchase_points.keys())))
+    html = html.replace("{{TRADE_POINTS_PRICES}}", json.dumps(list(purchase_points.values())))
+
+    # průměrná cena pro graf (vodorovná čára)
+    html = html.replace("{{AVG_PRICE_JS}}", f"{avg_price:.2f}")
 
     with open(OUTPUT, "w", encoding="utf-8") as f:
         f.write(html)
